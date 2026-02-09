@@ -1,229 +1,228 @@
 
 import React, { useState } from 'react';
 import { Theme, Party, SiteInfo } from '../types';
-import { 
-  Plus, Trash2, Edit, Save, Palette, FileText, 
-  Settings, Image as ImageIcon, XCircle, Link as LinkIcon, ExternalLink, Info
-} from 'lucide-react';
+import { Calendar, MapPin, Users, Share2, Instagram, MessageCircle, ChevronRight, X, ExternalLink, ShieldCheck, Target, Heart, Mail } from 'lucide-react';
 
 interface Props {
   theme: Theme;
-  setTheme: React.Dispatch<React.SetStateAction<Theme>>;
   parties: Party[];
-  setParties: React.Dispatch<React.SetStateAction<Party[]>>;
   siteInfo: SiteInfo;
-  setSiteInfo: React.Dispatch<React.SetStateAction<SiteInfo>>;
 }
 
-const AdminDashboard: React.FC<Props> = ({ 
-  theme, setTheme, parties, setParties, siteInfo, setSiteInfo 
-}) => {
-  const [activeTab, setActiveTab] = useState<'content' | 'theme' | 'parties'>('parties');
-  const [editingParty, setEditingParty] = useState<Party | null>(null);
+const ClientView: React.FC<Props> = ({ theme, parties, siteInfo }) => {
+  const [selectedParty, setSelectedParty] = useState<Party | null>(null);
 
-  const deleteParty = (id: string) => {
-    if (confirm('정말 이 게시글을 삭제하시겠습니까?')) {
-      setParties(parties.filter(p => p.id !== id));
+  const openPartyDetail = (party: Party) => {
+    setSelectedParty(party);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closePartyDetail = () => {
+    setSelectedParty(null);
+    document.body.style.overflow = 'auto';
+  };
+
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const offset = 80; // Header height
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = el.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
-  };
-
-  const saveParty = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingParty) {
-      if (parties.find(p => p.id === editingParty.id)) {
-        setParties(parties.map(p => p.id === editingParty.id ? editingParty : p));
-      } else {
-        setParties([...parties, editingParty]);
-      }
-      setEditingParty(null);
-    }
-  };
-
-  const createNewParty = () => {
-    setEditingParty({
-      id: Date.now().toString(),
-      title: '새로운 프리미엄 파티',
-      date: new Date().toISOString().split('T')[0] + ' 19:00',
-      location: '장소를 입력하세요',
-      capacity: 10,
-      currentApplicants: 0,
-      price: 100000,
-      description: '파티에 대한 상세 설명을 입력하세요.',
-      imageUrl: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=2070&auto=format&fit=crop',
-      status: '모집중',
-      googleFormUrl: ''
-    });
-  };
-
-  const updateFeature = (index: number, field: 'title' | 'description', value: string) => {
-    const newFeatures = [...siteInfo.aboutFeatures];
-    newFeatures[index][field] = value;
-    setSiteInfo({ ...siteInfo, aboutFeatures: newFeatures });
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden text-gray-900">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white shadow-xl flex flex-col z-10 border-r border-gray-100">
-        <div className="p-10 border-b border-gray-50">
-          <h2 className="text-2xl font-black tracking-tighter" style={{ color: theme.primaryColor }}>
-            ADMIN CENTER
-          </h2>
+    <div className="animate-in fade-in duration-1000">
+      {/* Header */}
+      <header className="fixed top-0 w-full z-40 backdrop-blur-md border-b border-gray-100 bg-white/80">
+        <div className="container mx-auto px-6 h-20 flex justify-between items-center">
+          <h1 className="text-2xl font-black tracking-[0.2em] cursor-pointer" style={{ color: theme.primaryColor }} onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
+            {siteInfo.name}
+          </h1>
+          <nav className="flex gap-8 md:gap-12 text-[11px] font-bold uppercase tracking-widest text-gray-500">
+            <button onClick={() => scrollTo('party-grid')} className="hover:text-black transition-colors">Parties</button>
+            <button onClick={() => scrollTo('about-section')} className="hover:text-black transition-colors">About Us</button>
+            <button onClick={() => scrollTo('footer-section')} className="hover:text-black transition-colors">Contact</button>
+          </nav>
+          {/* Sign In 버튼 삭제됨 */}
+          <div className="hidden md:block w-[100px]"></div> {/* 레이아웃 균형을 위한 빈 공간 */}
         </div>
-        <nav className="flex-1 px-6 py-10 space-y-4">
-          <button onClick={() => setActiveTab('parties')} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all ${activeTab === 'parties' ? 'bg-blue-50 text-blue-700 font-bold shadow-sm' : 'hover:bg-gray-50 text-gray-400 font-medium'}`}>
-            <FileText size={22} /> 파티 관리
-          </button>
-          <button onClick={() => setActiveTab('content')} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all ${activeTab === 'content' ? 'bg-blue-50 text-blue-700 font-bold shadow-sm' : 'hover:bg-gray-50 text-gray-400 font-medium'}`}>
-            <Info size={22} /> 브랜드 스토리
-          </button>
-          <button onClick={() => setActiveTab('theme')} className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all ${activeTab === 'theme' ? 'bg-blue-50 text-blue-700 font-bold shadow-sm' : 'hover:bg-gray-50 text-gray-400 font-medium'}`}>
-            <Palette size={22} /> 디자인 설정
-          </button>
-        </nav>
-      </aside>
+      </header>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-16 bg-[#F8FAFC]">
-        {activeTab === 'parties' && (
-          <div className="max-w-5xl mx-auto">
-            <div className="flex justify-between items-center mb-16">
-              <div>
-                <h3 className="text-4xl font-light">Party Management</h3>
-                <p className="text-gray-400 mt-2">사용자에게 보여질 파티 목록을 관리합니다.</p>
-              </div>
-              <button onClick={createNewParty} className="bg-blue-600 text-white px-10 py-4 rounded-full font-bold shadow-xl shadow-blue-500/20 flex items-center gap-3 hover:-translate-y-1 transition-all">
-                <Plus size={20} /> 새 파티 등록
-              </button>
+      {/* 1. Hero Section (메인 문구가 가장 먼저 보임) */}
+      <section className="relative pt-64 pb-48 px-6 overflow-hidden">
+        <div className="absolute top-20 right-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] opacity-10" style={{ backgroundColor: theme.primaryColor }}></div>
+        <div className="absolute bottom-10 left-[-5%] w-[30%] h-[30%] rounded-full blur-[100px] opacity-10" style={{ backgroundColor: theme.accentColor }}></div>
+
+        <div className="container mx-auto text-center relative z-10">
+          <div className="inline-block mb-8 px-5 py-2 border border-gray-200 rounded-full text-[10px] font-black tracking-[0.4em] uppercase text-gray-400">
+            Premium Social Club
+          </div>
+          <h2 className="text-5xl md:text-8xl font-light mb-10 leading-[1] tracking-tighter text-gray-900 whitespace-pre-line">
+            {siteInfo.heroTitle.split('\n').map((line, i) => (
+              <span key={i} className="block">
+                {line.includes('프리미엄') || line.includes('설렘') ? (
+                  <span className="font-bold italic" style={{ color: theme.primaryColor }}>{line}</span>
+                ) : line}
+              </span>
+            ))}
+          </h2>
+          <p className="text-gray-400 text-lg md:text-xl mb-14 max-w-2xl mx-auto font-light leading-relaxed px-4">
+            {siteInfo.heroSubTitle}
+          </p>
+          <div className="flex justify-center">
+            <button 
+              onClick={() => scrollTo('party-grid')}
+              className="px-12 py-5 rounded-full font-bold text-sm tracking-widest uppercase shadow-2xl shadow-blue-900/10 hover:-translate-y-1 transition-all"
+              style={{ backgroundColor: theme.primaryColor, color: '#FFFFFF' }}
+            >
+              파티 리스트 확인하기
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. Party Grid (모집중인 파티 섹션) */}
+      <section id="party-grid" className="py-40 px-6 bg-white border-t border-gray-100">
+        <div className="container mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-baseline mb-24 gap-6">
+            <div>
+              <span className="text-[11px] font-bold tracking-[0.4em] uppercase text-gray-400 mb-4 block">Our Events</span>
+              <h3 className="text-5xl font-light text-gray-900">진행 중인 프리미엄 파티</h3>
             </div>
-            <div className="grid gap-6">
-              {parties.map(party => (
-                <div key={party.id} className="bg-white p-8 rounded-[2rem] border border-gray-100 flex items-center justify-between group hover:shadow-2xl transition-all duration-500">
-                  <div className="flex items-center gap-8">
-                    <img src={party.imageUrl} className="w-24 h-24 rounded-3xl object-cover" />
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h4 className="text-xl font-bold">{party.title}</h4>
-                        <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase ${party.status === '모집중' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{party.status}</span>
-                      </div>
-                      <p className="text-gray-400 font-light">{party.date} | {party.location}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
+            {parties.map((party) => (
+              <div key={party.id} onClick={() => openPartyDetail(party)} className="group cursor-pointer">
+                <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden mb-10 shadow-sm group-hover:shadow-2xl transition-all duration-700">
+                  <img src={party.imageUrl} alt={party.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                  <div className="absolute top-8 left-8">
+                    <div className="px-5 py-2 rounded-full text-[10px] font-bold tracking-widest uppercase backdrop-blur-md bg-white/90 text-black shadow-sm">
+                      {party.status}
                     </div>
                   </div>
-                  <div className="flex gap-4">
-                    <button onClick={() => setEditingParty(party)} className="p-4 bg-gray-50 hover:bg-blue-50 text-gray-400 hover:text-blue-600 rounded-2xl transition-colors"><Edit size={22} /></button>
-                    <button onClick={() => deleteParty(party.id)} className="p-4 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded-2xl transition-colors"><Trash2 size={22} /></button>
+                  <div className="absolute inset-0 bg-blue-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-full bg-white/95 flex items-center justify-center translate-y-8 group-hover:translate-y-0 transition-all duration-500">
+                      <ChevronRight size={28} className="text-black" />
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                <div className="px-4">
+                  <div className="flex justify-between items-start mb-6">
+                    <h4 className="text-2xl font-medium text-gray-900 group-hover:text-blue-700 transition-colors leading-tight flex-1 pr-6">{party.title}</h4>
+                    <span className="text-xl font-bold" style={{ color: theme.primaryColor }}>₩{party.price.toLocaleString()}</span>
+                  </div>
+                  <div className="space-y-4 text-sm text-gray-400 font-light border-t border-gray-50 pt-6">
+                    <div className="flex items-center gap-4"><Calendar size={16} strokeWidth={1.5} /><span>{party.date}</span></div>
+                    <div className="flex items-center gap-4"><MapPin size={16} strokeWidth={1.5} /><span className="line-clamp-1">{party.location}</span></div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+      </section>
 
-        {activeTab === 'content' && (
-          <div className="max-w-4xl mx-auto space-y-12">
-            <div><h3 className="text-4xl font-light mb-4">Brand Story & About</h3><p className="text-gray-400">브랜드 가치와 특징을 정의합니다.</p></div>
-            
-            <div className="bg-white p-12 rounded-[3rem] shadow-xl space-y-10">
-              <div className="space-y-4">
-                <label className="text-[11px] font-black text-blue-500 uppercase tracking-[0.2em]">About Section Title</label>
-                <input type="text" value={siteInfo.aboutTitle} onChange={(e) => setSiteInfo({...siteInfo, aboutTitle: e.target.value})} className="w-full border-b-2 border-gray-100 py-4 text-2xl font-bold outline-none focus:border-blue-500 transition-colors" />
-              </div>
-              <div className="space-y-4">
-                <label className="text-[11px] font-black text-blue-500 uppercase tracking-[0.2em]">About Section Description</label>
-                <textarea rows={4} value={siteInfo.aboutDescription} onChange={(e) => setSiteInfo({...siteInfo, aboutDescription: e.target.value})} className="w-full bg-gray-50 rounded-3xl p-8 font-light leading-relaxed outline-none focus:bg-white focus:ring-2 ring-blue-500" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {siteInfo.aboutFeatures.map((feature, idx) => (
-                <div key={idx} className="bg-white p-10 rounded-[3rem] shadow-sm space-y-6">
-                  <span className="text-[10px] font-black text-gray-300">FEATURE 0{idx + 1}</span>
-                  <input type="text" value={feature.title} onChange={(e) => updateFeature(idx, 'title', e.target.value)} className="w-full border-b border-gray-100 py-2 font-bold outline-none focus:border-blue-500" placeholder="특징 제목" />
-                  <textarea rows={3} value={feature.description} onChange={(e) => updateFeature(idx, 'description', e.target.value)} className="w-full text-sm text-gray-400 font-light leading-relaxed outline-none border-none p-0 focus:ring-0" placeholder="상세 설명" />
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-white p-12 rounded-[3rem] shadow-sm space-y-10">
-              <div className="space-y-4">
-                <label className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Hero Section Title</label>
-                <textarea rows={2} value={siteInfo.heroTitle} onChange={(e) => setSiteInfo({...siteInfo, heroTitle: e.target.value})} className="w-full border-b-2 border-gray-100 py-4 text-3xl font-light outline-none focus:border-blue-500 transition-colors" />
-              </div>
-            </div>
+      {/* 3. About Us Section (특별함 어필) */}
+      <section id="about-section" className="py-40 bg-gray-50/50 px-6 border-t border-gray-100">
+        <div className="container mx-auto">
+          <div className="max-w-4xl mx-auto text-center mb-24">
+            <span className="text-[11px] font-bold tracking-[0.5em] uppercase text-blue-500 mb-4 block">Exclusive Membership</span>
+            <h3 className="text-4xl md:text-5xl font-light text-gray-900 mb-8 leading-tight">{siteInfo.aboutTitle}</h3>
+            <p className="text-xl text-gray-500 font-light leading-relaxed whitespace-pre-line italic px-4">
+              "{siteInfo.aboutDescription}"
+            </p>
           </div>
-        )}
 
-        {/* Theme Settings (Keep Existing) */}
-        {activeTab === 'theme' && (
-          <div className="max-w-3xl mx-auto bg-white p-16 rounded-[3rem] shadow-xl space-y-16">
-            <h3 className="text-3xl font-bold">Theme Settings</h3>
-            <div className="grid grid-cols-2 gap-16">
-              <div className="space-y-6">
-                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Primary Color</label>
-                <div className="flex items-center gap-6">
-                  <input type="color" value={theme.primaryColor} onChange={(e) => setTheme({...theme, primaryColor: e.target.value})} className="w-20 h-20 rounded-3xl cursor-pointer border-8 border-gray-50 shadow-inner" />
-                  <span className="font-mono text-xl">{theme.primaryColor}</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {siteInfo.aboutFeatures.map((feature, idx) => (
+              <div key={idx} className="bg-white p-12 rounded-[3rem] shadow-sm hover:shadow-xl transition-all duration-500 group border border-gray-50">
+                <div className="w-16 h-16 rounded-3xl bg-blue-50 flex items-center justify-center mb-10 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+                  {idx === 0 ? <ShieldCheck size={32} strokeWidth={1.5} /> : idx === 1 ? <Target size={32} strokeWidth={1.5} /> : <Heart size={32} strokeWidth={1.5} />}
                 </div>
+                <h4 className="text-2xl font-bold mb-6 text-gray-900">{feature.title}</h4>
+                <p className="text-gray-400 font-light leading-relaxed">{feature.description}</p>
               </div>
-              <div className="space-y-6">
-                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Accent Color</label>
-                <div className="flex items-center gap-6">
-                  <input type="color" value={theme.accentColor} onChange={(e) => setTheme({...theme, accentColor: e.target.value})} className="w-20 h-20 rounded-3xl cursor-pointer border-8 border-gray-50 shadow-inner" />
-                  <span className="font-mono text-xl">{theme.accentColor}</span>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
-        )}
-      </main>
+        </div>
+      </section>
 
-      {/* Editor Modal (Keep Existing with Status Edit) */}
-      {editingParty && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-8 backdrop-blur-3xl bg-blue-900/10">
-          <div className="bg-white w-full max-w-4xl rounded-[4rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <form onSubmit={saveParty} className="flex flex-col h-full max-h-[90vh]">
-              <div className="p-12 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                <h3 className="text-3xl font-bold">Edit Party</h3>
-                <button type="button" onClick={() => setEditingParty(null)} className="text-gray-300 hover:text-black transition-colors"><XCircle size={40} /></button>
+      {/* Modal & Footer */}
+      {selectedParty && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={closePartyDetail}></div>
+          <div className="relative w-full max-w-5xl bg-white rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col md:flex-row max-h-[90vh]">
+            <button onClick={closePartyDetail} className="absolute top-8 right-8 z-10 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white md:text-gray-300 md:hover:text-black transition-colors">
+              <X size={28} />
+            </button>
+            <div className="w-full md:w-1/2 h-80 md:h-auto"><img src={selectedParty.imageUrl} className="w-full h-full object-cover" /></div>
+            <div className="w-full md:w-1/2 p-10 md:p-16 overflow-y-auto">
+              <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-blue-500 mb-6 block">Exclusive Party</span>
+              <h3 className="text-4xl font-bold text-gray-900 mb-10 leading-tight">{selectedParty.title}</h3>
+              <div className="grid grid-cols-2 gap-10 mb-12 border-b border-gray-50 pb-12">
+                <div className="space-y-2"><span className="text-[10px] font-black text-gray-300 uppercase">Date</span><div className="text-sm font-medium">{selectedParty.date}</div></div>
+                <div className="space-y-2"><span className="text-[10px] font-black text-gray-300 uppercase">Location</span><div className="text-sm font-medium line-clamp-1">{selectedParty.location}</div></div>
+                <div className="space-y-2"><span className="text-[10px] font-black text-gray-300 uppercase">Fee</span><div className="text-2xl font-bold text-blue-900">₩{selectedParty.price.toLocaleString()}</div></div>
+                <div className="space-y-2"><span className="text-[10px] font-black text-gray-300 uppercase">Entry</span><div className="text-2xl font-bold text-gray-700">{selectedParty.currentApplicants}/{selectedParty.capacity}</div></div>
               </div>
-              <div className="p-12 overflow-y-auto space-y-10">
-                <div className="grid grid-cols-2 gap-10">
-                  <div className="col-span-2 space-y-4">
-                    <label className="text-[11px] font-black text-gray-400 uppercase">Party Title</label>
-                    <input type="text" required value={editingParty.title} onChange={(e) => setEditingParty({...editingParty, title: e.target.value})} className="w-full border-b-2 border-gray-100 py-4 text-2xl font-bold outline-none focus:border-blue-500" />
-                  </div>
-                  <div className="space-y-4">
-                    <label className="text-[11px] font-black text-blue-500 uppercase">Status</label>
-                    <select value={editingParty.status} onChange={(e) => setEditingParty({...editingParty, status: e.target.value as any})} className="w-full border-b-2 border-gray-100 py-4 font-bold outline-none focus:border-blue-500 bg-transparent">
-                      <option value="모집중">🟢 모집중</option>
-                      <option value="마감">🔴 마감</option>
-                      <option value="진행완료">⚪ 진행완료</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <label className="text-[11px] font-black text-gray-400 uppercase">Google Form URL</label>
-                    <input type="text" required value={editingParty.googleFormUrl || ''} onChange={(e) => setEditingParty({...editingParty, googleFormUrl: e.target.value})} className="w-full border-b-2 border-gray-100 py-4 text-blue-600 outline-none" placeholder="https://forms.google.com/..." />
-                  </div>
-                  <div className="space-y-4"><label className="text-[11px] font-black text-gray-400 uppercase">Date</label><input type="text" required value={editingParty.date} onChange={(e) => setEditingParty({...editingParty, date: e.target.value})} className="w-full border-b-2 border-gray-100 py-4 outline-none" /></div>
-                  <div className="space-y-4"><label className="text-[11px] font-black text-gray-400 uppercase">Location</label><input type="text" required value={editingParty.location} onChange={(e) => setEditingParty({...editingParty, location: e.target.value})} className="w-full border-b-2 border-gray-100 py-4 outline-none" /></div>
-                  <div className="space-y-4"><label className="text-[11px] font-black text-gray-400 uppercase">Price</label><input type="number" required value={editingParty.price} onChange={(e) => setEditingParty({...editingParty, price: parseInt(e.target.value)})} className="w-full border-b-2 border-gray-100 py-4 outline-none" /></div>
-                  <div className="space-y-4"><label className="text-[11px] font-black text-gray-400 uppercase">Capacity</label><input type="number" required value={editingParty.capacity} onChange={(e) => setEditingParty({...editingParty, capacity: parseInt(e.target.value)})} className="w-full border-b-2 border-gray-100 py-4 outline-none" /></div>
-                  <div className="col-span-2 space-y-4">
-                    <label className="text-[11px] font-black text-gray-400 uppercase">Description</label>
-                    <textarea rows={6} value={editingParty.description} onChange={(e) => setEditingParty({...editingParty, description: e.target.value})} className="w-full bg-gray-50 rounded-[2rem] p-8 outline-none focus:bg-white focus:ring-2 ring-blue-500" />
-                  </div>
-                </div>
-              </div>
-              <div className="p-12 bg-gray-50 flex gap-6">
-                <button type="submit" className="flex-1 bg-blue-600 text-white py-6 rounded-3xl font-bold flex items-center justify-center gap-3 shadow-2xl shadow-blue-500/20 active:scale-95 transition-all"><Save size={24} /> 저장하기</button>
-                <button type="button" onClick={() => setEditingParty(null)} className="px-16 bg-white border border-gray-200 py-6 rounded-3xl font-bold text-gray-400 hover:bg-gray-100 transition-colors">닫기</button>
-              </div>
-            </form>
+              <p className="text-gray-500 font-light leading-relaxed mb-12 whitespace-pre-line">{selectedParty.description}</p>
+              {selectedParty.status === '모집중' ? (
+                <a href={selectedParty.googleFormUrl || '#'} target="_blank" className="w-full py-6 rounded-3xl flex items-center justify-center gap-3 text-white font-bold transition-all hover:brightness-110 shadow-2xl shadow-blue-900/20 active:scale-[0.98]" style={{ backgroundColor: theme.primaryColor }}>참여 신청하기 <ExternalLink size={20} /></a>
+              ) : (
+                <button disabled className="w-full py-6 rounded-3xl bg-gray-100 text-gray-400 font-bold">마감되었습니다</button>
+              )}
+            </div>
           </div>
         </div>
       )}
+
+      {/* Footer Section (Contact 정보 포함) */}
+      <footer id="footer-section" className="py-40 bg-white border-t border-gray-100">
+        <div className="container mx-auto px-6 text-center md:text-left">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-24">
+            <div className="max-w-sm mx-auto md:mx-0">
+              <h1 className="text-4xl font-black tracking-widest mb-10" style={{ color: theme.primaryColor }}>{siteInfo.name}</h1>
+              <p className="text-gray-400 font-light leading-relaxed text-lg">새로운 만남의 설렘과 고급스러운 신뢰감이 공존하는 프리미엄 플랫폼</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mx-auto md:mx-0">
+              <div id="contact-info">
+                <h5 className="text-[11px] font-bold tracking-[0.4em] uppercase text-gray-900 mb-10">Contact Us</h5>
+                <div className="flex items-center gap-3 justify-center md:justify-start text-blue-600 font-bold text-xl hover:scale-105 transition-transform">
+                   <Mail size={24} />
+                   <a href={`mailto:${siteInfo.contactEmail}`}>{siteInfo.contactEmail}</a>
+                </div>
+                <p className="text-gray-400 font-light mt-4 text-sm">문의 사항은 이메일로 보내주시면 24시간 이내에 답변 드립니다.</p>
+              </div>
+              <div>
+                <h5 className="text-[11px] font-bold tracking-[0.4em] uppercase text-gray-900 mb-10">Follow</h5>
+                <div className="flex gap-8 justify-center md:justify-start">
+                  <a href="#" className="text-gray-300 hover:text-pink-500 transition-colors"><Instagram size={28} /></a>
+                  <a href="#" className="text-gray-300 hover:text-yellow-500 transition-colors"><MessageCircle size={28} /></a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-40 pt-10 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-gray-300 text-[10px] font-bold tracking-widest uppercase italic">© 2024 {siteInfo.name} Premium. All rights reserved.</p>
+            <div className="flex gap-10 text-[10px] font-black text-gray-200 uppercase tracking-[0.2em]">
+              <a href="#" className="hover:text-gray-400">Terms</a>
+              <a href="#" className="hover:text-gray-400">Privacy</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
 
-export default AdminDashboard;
+export default ClientView;
